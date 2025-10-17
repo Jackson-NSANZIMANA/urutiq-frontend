@@ -1,20 +1,21 @@
 {
   "compilerOptions": {
+    /* ECMAScript target & libraries */
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Module system */
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Import/Export */
+    /* Import/Export behavior */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -26,7 +27,11 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path mapping */
+    /* Node.js + Polyfills */
+    "types": ["node"],
+    "allowJs": true,
+
+    /* Path aliasing */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
@@ -34,7 +39,8 @@
       "@lib/*": ["./src/lib/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@contexts/*": ["./src/contexts/*"],
-      "@stores/*": ["./src/stores/*"]
+      "@stores/*": ["./src/stores/*"],
+      "buffer": ["./node_modules/buffer"]
     }
   },
   "include": ["src/**/*", "src/vite-env.d.ts"],
