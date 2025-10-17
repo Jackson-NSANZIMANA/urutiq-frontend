@@ -1,2 +1,0 @@
-# urutiq-frontend
-# urutiq-frontend
