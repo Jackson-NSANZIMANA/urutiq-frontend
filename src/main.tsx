@@ -1,4 +1,5 @@
 import React from 'react'
+window.React = React
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ReactQueryProvider } from './components/react-query-provider'
@@ -15,5 +16,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </KeyboardNavigationProvider>
       </BrowserRouter>
     </ReactQueryProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 )
