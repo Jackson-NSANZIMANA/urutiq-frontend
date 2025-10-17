@@ -4,6 +4,9 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ReactQueryProvider } from './components/react-query-provider'
 import { KeyboardNavigationProvider } from './components/keyboard-navigation-provider'
+import * as Slot from '@radix-ui/react-slot'
+console.log(Slot)
+
 import App from './App'
 // import './styles/globals.css'
 

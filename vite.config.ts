@@ -5,6 +5,9 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['@radix-ui/react-slot'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -13,6 +16,7 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@contexts': path.resolve(__dirname, './src/contexts'),
       '@stores': path.resolve(__dirname, './src/stores'),
+      react: require.resolve('react'),
     },
   },
   server: {
