@@ -292,8 +292,28 @@ export const LlamaAIDemo: FC<LlamaAIDemoProps> = ({ companyId }) => {
   } catch (error) {
     setErrorMessage(error instanceof Error ? error.message : 'Unknown error generating forecast');
     setPredictiveResult(null);
-  } finally {
-    setIsLoading(false);
+    return;
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    setErrorMessage(`Request failed (${response.status}): ${text || 'Unknown error'}`);
+    setComplianceResult(null);
+    return;
+  }
+
+  try {
+    const result = await response.json();
+    if (result.success) {
+      setComplianceResult(result.data);
+      setErrorMessage(null);
+    } else {
+      setErrorMessage(result.error || 'Compliance analysis failed');
+      setComplianceResult(null);
+    }
+  } catch (error) {
+    setErrorMessage(error instanceof Error ? error.message : 'Error parsing compliance analysis response');
+    setComplianceResult(null);
   }
 };
 

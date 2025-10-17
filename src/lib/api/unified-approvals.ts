@@ -110,12 +110,8 @@ export const unifiedApprovalsApi = {
     entitySubType?: string;
     isActive?: boolean;
   }) => {
-    const params = new URLSearchParams();
-    params.append('companyId', String(companyId));
-    if (filters?.entityType) params.append('entityType', String(filters.entityType));
-    if (filters?.entitySubType) params.append('entitySubType', String(filters.entitySubType));
-    if (typeof filters?.isActive === 'boolean') params.append('isActive', String(filters.isActive));
-    const response = await apiService.get(`/unified-approvals/approval-workflows?${params.toString()}`);
+    const params = new URLSearchParams({ companyId, ...filters });
+    const response = await apiService.get(`/unified-approvals/approval-workflows?${params}`);
     return response.data || response || [];
   },
 
@@ -150,14 +146,8 @@ export const unifiedApprovalsApi = {
     page?: number;
     pageSize?: number;
   }) => {
-    const params = new URLSearchParams();
-    params.append('companyId', String(companyId));
-    if (filters?.entityType) params.append('entityType', String(filters.entityType));
-    if (filters?.status) params.append('status', String(filters.status));
-    if (filters?.requestedBy) params.append('requestedBy', String(filters.requestedBy));
-    if (filters?.page) params.append('page', String(filters.page));
-    if (filters?.pageSize) params.append('pageSize', String(filters.pageSize));
-    const response = await apiService.get(`/unified-approvals/approval-requests?${params.toString()}`);
+    const params = new URLSearchParams({ companyId, ...filters });
+    const response = await apiService.get(`/unified-approvals/approval-requests?${params}`);
     return response.data || response || [];
   },
 
@@ -197,11 +187,8 @@ export const unifiedApprovalsApi = {
     dateFrom?: string;
     dateTo?: string;
   }) => {
-    const params = new URLSearchParams();
-    params.append('companyId', String(companyId));
-    if (filters?.dateFrom) params.append('dateFrom', String(filters.dateFrom));
-    if (filters?.dateTo) params.append('dateTo', String(filters.dateTo));
-    const response = await apiService.get(`/unified-approvals/approval-dashboard?${params.toString()}`);
+    const params = new URLSearchParams({ companyId, ...filters });
+    const response = await apiService.get(`/unified-approvals/approval-dashboard?${params}`);
     
     // Ensure we always return a valid response structure
     if (!response) {
@@ -228,10 +215,8 @@ export const unifiedApprovalsApi = {
   getTemplates: async (companyId: string, filters?: {
     entityType?: string;
   }) => {
-    const params = new URLSearchParams();
-    params.append('companyId', String(companyId));
-    if (filters?.entityType) params.append('entityType', String(filters.entityType));
-    const response = await apiService.get(`/unified-approvals/approval-templates?${params.toString()}`);
+    const params = new URLSearchParams({ companyId, ...filters });
+    const response = await apiService.get(`/unified-approvals/approval-templates?${params}`);
     return response.data || response || [];
   },
 

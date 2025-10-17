@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import apiService from '../lib/api';
+import { purchaseApi } from '../lib/api/accounting';
 import { getCompanyId, getTenantId } from '../lib/config';
 
 interface Bill {
@@ -114,24 +115,8 @@ export default function AccountsPayablePage() {
   const loadBills = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getBills({
-        companyId,
-        page: 1,
-        pageSize: 50
-      });
-
-      const mapped: Bill[] = (response?.items || []).map((b: any) => ({
-        id: b.id,
-        billNumber: b.billNumber,
-        vendor: { name: b.vendor?.name || b.vendorName || 'Unknown Vendor' },
-        totalAmount: Number(b.totalAmount) || 0,
-        balanceDue: Number(b.balanceDue) || 0,
-        status: b.status || 'pending',
-        dueDate: b.dueDate || b.billDate || new Date().toISOString(),
-        invoiceDate: b.billDate || b.invoiceDate || b.createdAt || new Date().toISOString(),
-      }))
-      
-      setBills(mapped);
+      const { bills } = await purchaseApi.getBills(companyId, undefined, 1, 50);
+      setBills(bills || []);
     } catch (error) {
       console.error('Error loading bills:', error);
       setError('Failed to load bills');
@@ -165,40 +150,29 @@ export default function AccountsPayablePage() {
     try {
       setLoading(true);
       
-      const res: any = await apiService.processPayment({
+      const result = await apiService.processPayment({
         billId: paymentForm.billId,
         amount: paymentForm.amount,
         paymentMethod: paymentForm.paymentMethod,
         notes: paymentForm.notes
       });
 
-      const journalEntryId: string | undefined = res?.data?.journalEntry?.id ?? res?.journalEntry?.id
-      const isOk: boolean = typeof res?.success === 'boolean' ? res.success : !!journalEntryId
-
-      if (isOk) {
-        toast.success('Payment processed successfully!', {
-          description: `Payment of ${paymentForm.amount} recorded${journalEntryId ? ` with journal entry ${journalEntryId}` : ''}`
-        });
-        
-        // Reload bills and payments
-        await loadBills();
-        await loadPayments();
-        
-        // Close dialog
-        setShowPaymentDialog(false);
-        setSelectedBill(null);
-        setPaymentForm({
-          billId: '',
-          amount: 0,
-          paymentMethod: 'bank_transfer',
-          notes: ''
-        });
-      } else {
-        const errMsg: string = typeof res?.error === 'string' ? res.error : (res?.error?.message || 'Unknown error occurred')
-        toast.error('Failed to process payment', {
-          description: errMsg
-        });
-      }
+      toast.success('Payment processed successfully!', {
+        description: `Payment of $${paymentForm.amount} recorded with journal entry ${result.journalEntry?.id || result.accountingEntries?.journalEntryId || 'N/A'}`
+      });
+      
+      // Reload bills and payments
+      await loadBills();
+      await loadPayments();
+      // Close dialog
+      setShowPaymentDialog(false);
+      setSelectedBill(null);
+      setPaymentForm({
+        billId: '',
+        amount: 0,
+        paymentMethod: 'bank_transfer',
+        notes: ''
+      });
     } catch (error) {
       console.error('Error processing payment:', error);
       toast.error('Failed to process payment', {

@@ -74,7 +74,7 @@ export function InventoryAnalytics({
   // Process data for charts
   const chartData = useMemo(() => {
     // Category breakdown - use categories array to map categoryId to category name
-    const categoryData = products.reduce((acc: ChartData[], product: any) => {
+    const categoryData = products.reduce((acc, product) => {
       let category = 'Uncategorized'
       
       // Find category name using categoryId
@@ -85,7 +85,7 @@ export function InventoryAnalytics({
         category = product.category
       }
       
-      const existing = acc.find((item: any) => item.name === category)
+      const existing = acc.find(item => item.name === category)
       const stockQuantity = parseFloat(product.stockQuantity || 0)
       const unitPrice = parseFloat(product.unitPrice || 0)
       const revenue = unitPrice * stockQuantity
@@ -104,11 +104,11 @@ export function InventoryAnalytics({
     }, [] as ChartData[])
     
     // Filter out categories with zero values for better visualization
-    const filteredCategoryData = categoryData.filter((cat: any) => cat.value > 0)
+    const filteredCategoryData = categoryData.filter(cat => cat.value > 0)
 
     // Top products by value
     const topProducts = products
-      .map((product: any) => {
+      .map(product => {
         const stockQuantity = parseFloat(product.stockQuantity || 0)
         const costPrice = parseFloat(product.costPrice || 0)
         const unitPrice = parseFloat(product.unitPrice || 0)
@@ -128,7 +128,7 @@ export function InventoryAnalytics({
       .slice(0, 10)
 
     // Stock levels by location - use proper location-specific stock data
-    const locationData = locations.map((location: any) => {
+    const locationData = locations.map(location => {
       // Use the stockMetrics from the enhanced API response if available
       if (location.stockMetrics) {
         return {
@@ -175,7 +175,7 @@ export function InventoryAnalytics({
         const date = new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000)
         const dateStr = date.toISOString().split('T')[0]
         
-        const dayMovements = movements.filter((movement: any) => {
+        const dayMovements = movements.filter(movement => {
           const movementDate = new Date(movement.movementDate).toISOString().split('T')[0]
           return movementDate === dateStr
         })

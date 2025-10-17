@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser'
+import { BrowserMultiFormatReader } from '@zxing/browser'
 import Webcam from 'react-webcam'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -47,7 +47,6 @@ export function BarcodeScanner({ onScan, onProductFound, trigger, className }: B
   
   const webcamRef = useRef<Webcam>(null)
   const readerRef = useRef<BrowserMultiFormatReader | null>(null)
-  const controlsRef = useRef<IScannerControls | null>(null)
   const { toast } = useToast()
 
   // Initialize barcode reader
@@ -56,9 +55,8 @@ export function BarcodeScanner({ onScan, onProductFound, trigger, className }: B
       readerRef.current = new BrowserMultiFormatReader()
     }
     return () => {
-      if (controlsRef.current) {
-        try { controlsRef.current.stop() } catch {}
-        controlsRef.current = null
+      if (readerRef.current) {
+        readerRef.current.reset()
       }
     }
   }, [isOpen])
@@ -90,34 +88,33 @@ export function BarcodeScanner({ onScan, onProductFound, trigger, className }: B
 
     try {
       setIsScanning(true)
+      
       const videoElement = webcamRef.current.video
       if (!videoElement) {
         throw new Error('Camera not available')
       }
 
-      const controls = await readerRef.current.decodeFromVideoElement(
-        videoElement,
-        (result, err, ctrl) => {
-          if (ctrl) {
-            controlsRef.current = ctrl
-          }
-          if (result) {
-            const text = result.getText()
-            handleScanResult(text)
-          }
-        }
-      )
-      controlsRef.current = controls
+      const result = await readerRef.current.decodeFromVideoElement(videoElement)
+      
+      if (result) {
+        const barcode = result.getText()
+        handleScanResult(barcode)
+      }
     } catch (error) {
       console.error('Scanning error:', error)
+      // Continue scanning on error
+      setTimeout(() => {
+        if (isScanning) {
+          startScanning()
+        }
+      }, 100)
     }
-  }, [])
+  }, [isScanning])
 
   const stopScanning = () => {
     setIsScanning(false)
-    if (controlsRef.current) {
-      try { controlsRef.current.stop() } catch {}
-      controlsRef.current = null
+    if (readerRef.current) {
+      readerRef.current.reset()
     }
   }
 

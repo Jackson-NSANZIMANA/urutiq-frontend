@@ -1,13 +1,10 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    include: ['@radix-ui/react-slot'],
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -16,7 +13,7 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, './src/hooks'),
       '@contexts': path.resolve(__dirname, './src/contexts'),
       '@stores': path.resolve(__dirname, './src/stores'),
-      react: require.resolve('react'),
+      buffer: 'buffer/', // ← Add this line
     },
   },
   server: {
@@ -34,26 +31,29 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    chunkSizeWarningLimit: 4000,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@tanstack/react-query')) return 'query'
-            if (id.includes('recharts')) return 'charts'
-            if (id.includes('lucide-react')) return 'icons'
-            if (id.includes('jspdf') || id.includes('html2canvas')) return 'pdf'
-            if (id.includes('@zxing')) return 'zxing'
-            if (id.includes('react-day-picker')) return 'daypicker'
-            if (id.includes('@radix-ui')) return 'ui'
-            return 'vendor'
-          }
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
         },
       },
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis', // ← Polyfill Node global
+      },
+      plugins: [
+        NodeGlobalsPolyfillPlugin({
+          buffer: true, // ← Enable Buffer polyfill
+        }),
+      ],
     },
   },
   define: {
     'process.env': process.env,
   },
   envPrefix: 'VITE_',
-})
+});

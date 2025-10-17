@@ -1,5 +1,12 @@
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
+
+// Extend jsPDF type to include autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 export interface ExportOptions {
   title: string;
@@ -52,7 +59,7 @@ export const exportToPDF = (options: ExportOptions): void => {
   );
   
   // Add table
-  autoTable(doc as any, {
+  doc.autoTable({
     head: [options.columns.map(col => col.label)],
     body: tableData,
     startY: 50,
@@ -67,9 +74,9 @@ export const exportToPDF = (options: ExportOptions): void => {
     },
     columnStyles: options.columns.reduce((acc, col, index) => {
       acc[index] = {
-        halign: (col.align as any) || 'left',
-        cellWidth: (col.width as any) || 'auto',
-      } as any;
+        halign: col.align || 'left',
+        cellWidth: col.width || 'auto',
+      };
       return acc;
     }, {} as any),
   });

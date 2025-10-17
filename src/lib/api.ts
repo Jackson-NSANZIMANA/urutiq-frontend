@@ -25,23 +25,6 @@ export interface Company {
   taxId?: string;
   country?: string;
   currency?: string;
-  // Optional UI/branding fields used by components
-  primaryColor?: string;
-  secondaryColor?: string;
-  fontFamily?: string;
-  website?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  invoiceTemplate?: string;
-  invoiceFooter?: string;
-  invoiceTerms?: string;
-  showLogo?: boolean;
-  showWebsite?: boolean;
-  showAddress?: boolean;
   fiscalYearStart?: string;
   createdAt: string;
   updatedAt: string;
@@ -712,10 +695,10 @@ class ApiService {
     this.refreshTokenValue = token;
   }
 
-  async request<T>(
+  private async request<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<any> {
+  ): Promise<ApiResponse<T>> {
     // Add /api prefix to the endpoint if it doesn't already have it, except for journal-hub routes
     const apiEndpoint = endpoint.startsWith('/api') || endpoint.startsWith('/journal-hub') ? endpoint : `/api${endpoint}`;
     const url = `${this.baseUrl}${apiEndpoint}`;
@@ -958,11 +941,6 @@ class ApiService {
     const resp = await this.request<T>(endpoint, { method: 'DELETE', ...options });
     // Handle both wrapped responses (resp.data) and direct responses (resp)
     return (resp.data as T) ?? (resp as T) ?? ({} as T);
-  }
-
-  async patch<T = any>(endpoint: string, body?: any, options: RequestInit = {}): Promise<T> {
-    const resp = await this.request<T>(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : options.body, ...options });
-    return (resp?.data as T) ?? (resp as T) ?? ({} as T);
   }
 
   // Authentication
@@ -1549,7 +1527,7 @@ async registerWithCompany(data: {
 
   // Update recurring invoice status
   async updateRecurringInvoiceStatus(id: string, status: 'active' | 'paused' | 'completed' | 'cancelled'): Promise<RecurringInvoice> {
-    return this.patch(`/api/recurring-invoices/${id}/status`, { status });
+    return this.put<RecurringInvoice>(`/api/recurring-invoices/${id}/status`, { status });
   }
 
   // Get generated invoices history for a recurring invoice
@@ -1563,7 +1541,7 @@ async registerWithCompany(data: {
     amount: number;
     paymentMethod: 'check' | 'bank_transfer' | 'credit_card' | 'cash';
     notes?: string;
-  }): Promise<ApiResponse<{
+  }): Promise<{
     payment: any;
     journalEntry: any;
     bill: any;
@@ -1576,8 +1554,60 @@ async registerWithCompany(data: {
       journalEntryId: string;
       reference: string;
     };
-  }>> {
-    return this.post('/api/accounts-payable/payments/process', data);
+  }> {
+    return this.post<{
+      payment: any;
+      journalEntry: any;
+      bill: any;
+      purchaseOrders: any[];
+      accountingEntries: {
+        accountsPayableAccount: string;
+        cashAccount: string;
+        debitAmount: number;
+        creditAmount: number;
+        journalEntryId: string;
+        reference: string;
+      };
+    }>(
+      '/api/accounts-payable/payments/process',
+      data
+    );
+  }
+
+  // Fetch bills with normalized response shape
+  async getBills(params?: {
+    companyId?: string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ items: any[]; pagination: any }> {
+    const searchParams = new URLSearchParams();
+    if (params?.companyId) searchParams.append('companyId', params.companyId);
+    if (params?.status) searchParams.append('status', params.status);
+    if (params?.page) searchParams.append('page', String(params.page));
+    if (params?.pageSize) searchParams.append('pageSize', String(params.pageSize));
+
+    const res = await this.get<any>(`/api/bills${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
+
+    // Normalize various possible backend shapes to { items, pagination }
+    const rawItems: any[] = res?.items || res?.bills || (Array.isArray(res) ? res : []);
+    const pagination = res?.pagination ?? { page: res?.page ?? 1, pageSize: res?.pageSize ?? rawItems.length, total: res?.total ?? rawItems.length, totalPages: res?.totalPages ?? 1 };
+
+    // Map to Accounts Payable page expected shape
+    const items = (rawItems || []).map((b: any) => ({
+      id: b.id,
+      billNumber: b.billNumber || b.number || b.reference || '',
+      vendor: {
+        name: b.vendor?.name || b.vendorName || b.supplier?.name || 'Unknown Vendor',
+      },
+      totalAmount: Number(b.totalAmount ?? b.amount ?? 0),
+      balanceDue: Number(b.balanceDue ?? b.outstandingAmount ?? b.totalAmount ?? 0),
+      status: b.status || 'pending',
+      dueDate: b.dueDate || b.paymentDueDate || b.billDate || new Date().toISOString(),
+      invoiceDate: b.invoiceDate || b.billDate || b.createdAt || new Date().toISOString(),
+    }));
+
+    return { items, pagination };
   }
 
   async createBill(data: any): Promise<Bill> {
@@ -1586,16 +1616,6 @@ async registerWithCompany(data: {
 
   async postBill(id: string): Promise<Bill> {
     return this.post<Bill>(`/bills/${id}/post`);
-  }
-
-  async getBills(params?: { companyId?: string; status?: string; page?: number; pageSize?: number; q?: string; }): Promise<{ items: Bill[]; page: number; pageSize: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean }> {
-    const sp = new URLSearchParams();
-    if (params?.companyId) sp.append('companyId', params.companyId);
-    if (params?.status) sp.append('status', params.status);
-    if (params?.page) sp.append('page', String(params.page));
-    if (params?.pageSize) sp.append('pageSize', String(params.pageSize));
-    if (params?.q) sp.append('q', params.q);
-    return this.get(`/api/bills?${sp.toString()}`);
   }
 
   // Customers

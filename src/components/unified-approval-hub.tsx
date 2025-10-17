@@ -202,7 +202,7 @@ export function UnifiedApprovalHub() {
     enabled: !!companyId && isAuthenticated && !isLoading,
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const { data: requests, isLoading: requestsLoading, error: requestsError } = useQuery({

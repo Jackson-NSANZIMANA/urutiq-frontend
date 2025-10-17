@@ -115,7 +115,7 @@ export function AccountingIntegrationStatus({ invoiceId, invoiceNumber }: Accoun
 
           {error && (
             <div className="text-xs text-red-500">
-              {error}
+              {error?.message || error?.toString() || 'Unknown error'}
             </div>
           )}
 

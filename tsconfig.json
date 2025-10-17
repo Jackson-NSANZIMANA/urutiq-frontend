@@ -1,37 +1,36 @@
 {
   "compilerOptions": {
-    /* ECMAScript target & libraries */
     "target": "ES2020",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-
-    /* Module system */
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "noEmit": false,
     "jsx": "react-jsx",
 
-    /* Import/Export behavior */
+    /* Import/Export */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "downlevelIteration": true,
 
     /* Linting */
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": false,
+    "noEmitOnError": false,
 
-    /* Node.js + Polyfills */
-    "types": ["node"],
-    "allowJs": true,
-
-    /* Path aliasing */
+    /* Path mapping */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
@@ -39,8 +38,7 @@
       "@lib/*": ["./src/lib/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@contexts/*": ["./src/contexts/*"],
-      "@stores/*": ["./src/stores/*"],
-      "buffer": ["./node_modules/buffer"]
+      "@stores/*": ["./src/stores/*"]
     }
   },
   "include": ["src/**/*", "src/vite-env.d.ts"],

@@ -98,7 +98,7 @@ export const bankingApiV2 = {
 
   async createBankAccount(data: Partial<BankAccount>) {
     const res = await apiService.post<BankAccount>('/api/bank-accounts', data)
-    return res
+    return res.data
   },
 
   async getBankTransactions(bankAccountId?: string, companyId?: string, status?: string, page = 1, pageSize = 50) {
@@ -124,12 +124,12 @@ export const bankingApiV2 = {
 
   async createBankTransaction(data: Partial<BankTransaction>) {
     const res = await apiService.post<BankTransaction>('/api/bank-transactions', data)
-    return res
+    return res.data
   },
 
   async reconcileTransaction(transactionId: string, data: { paymentId?: string }) {
     const res = await apiService.post<BankTransaction>(`/bank-transactions/${transactionId}/reconcile`, data)
-    return res
+    return res.data
   },
 
   async getPayments(companyId?: string) {
@@ -140,7 +140,7 @@ export const bankingApiV2 = {
 
   async createPayment(data: Partial<Payment>) {
     const res = await apiService.post<Payment>('/api/payments', data)
-    return res
+    return res.data
   },
 
   // Currency methods
